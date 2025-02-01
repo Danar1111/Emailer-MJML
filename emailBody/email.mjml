@@ -1,0 +1,29 @@
+<mjml>
+  <mj-head>
+    <mj-title>Selamat Datang!</mj-title>
+    <mj-preview>Email dari Layanan Kami</mj-preview>
+  </mj-head>
+  <mj-body>
+    <mj-section background-color="#f0f0f0" padding="20px">
+      <mj-column>
+        <mj-text font-size="20px" align="center" color="#007BFF">
+          Selamat Datang di Layanan Kami!
+        </mj-text>
+        <mj-image width="300px" src="https://via.placeholder.com/300x150" />
+        <mj-text align="center" color="#333333">
+          Terima kasih telah bergabung dengan kami. Jangan lewatkan penawaran eksklusif!
+        </mj-text>
+        <mj-button background-color="#28a745" href="https://example.com" align="center">
+          Lihat Penawaran
+        </mj-button>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-size="12px" color="#aaaaaa" align="center">
+          &copy; 2025 Perusahaan Kamu. All Rights Reserved.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
