@@ -1,27 +1,70 @@
 <mjml>
   <mj-head>
-    <mj-title>Selamat Datang!</mj-title>
-    <mj-preview>Email dari Layanan Kami</mj-preview>
+    <mj-preview>Your reminder has been sent. </mj-preview>
+    <mj-font name="Poppins" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" />
   </mj-head>
-  <mj-body>
-    <mj-section background-color="#f0f0f0" padding="20px">
+
+  <mj-body background-color="#f4f6fa">
+    <!-- Header Section -->
+    <mj-section background-color="#005f99" padding="40px 0">
       <mj-column>
-        <mj-text font-size="20px" align="center" color="#007BFF">
-          Selamat Datang di Layanan Kami!
+        <mj-text align="center" font-family="Poppins, Arial, sans-serif" color="#ffffff" font-size="24px" font-weight="bold">
+          Hello, {{user_name}}
         </mj-text>
-        <mj-image width="300px" src="https://via.placeholder.com/300x150" />
-        <mj-text align="center" color="#333333">
-          Terima kasih telah bergabung dengan kami. Jangan lewatkan penawaran eksklusif!
+        <mj-text align="center" font-family="Poppins, Arial, sans-serif" color="#d1e6f2" font-size="16px" padding-bottom="0">
+          Here's something that will brighten your day.
         </mj-text>
-        <mj-button background-color="#28a745" href="https://example.com" align="center">
-          Lihat Penawaran
-        </mj-button>
       </mj-column>
     </mj-section>
-    <mj-section background-color="#ffffff">
+
+    <!-- Greeting Section -->
+    <mj-section padding="20px 15px">
       <mj-column>
-        <mj-text font-size="12px" color="#aaaaaa" align="center">
-          &copy; 2025 Perusahaan Kamu. All Rights Reserved.
+        <mj-text align="center" font-family="Poppins, Arial, sans-serif" color="#444444" font-size="20px" font-weight="600" padding-bottom="10px">
+          Today's Thought for You
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Image Section -->
+    <mj-section padding="10px 0" background-color="#f4f6fa">
+      <mj-column>
+        <mj-image width="400px" border-radius="10%" src="{{image}}" alt="Image" />
+      </mj-column>
+    </mj-section>
+
+    <!-- Quote Section -->
+    <mj-section padding="20px 20px" background-color="#ffffff" border-radius="12px">
+      <mj-column>
+        <mj-text font-family="Poppins, Arial, sans-serif" color="#333333" font-size="18px" font-style="italic" line-height="1.6" align="center" padding-bottom="10px">
+          "{{generated}}"
+        </mj-text>
+        <mj-text font-family="Poppins, Arial, sans-serif" font-size="16px" color="#555555" align="center">
+          {{generated_by}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Signature Section -->
+    <mj-section padding="20px 30px">
+      <mj-column>
+        <mj-text font-family="Poppins, Arial, sans-serif" font-size="18px" color="#333333" align="center" padding-bottom="10px">
+          Warm regards,
+        </mj-text>
+        <mj-text font-family="Poppins, Arial, sans-serif" font-size="18px" font-weight="bold" color="#005f99" align="center">
+          {{regards}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer Section -->
+    <mj-section padding="20px" background-color="#333333">
+      <mj-column>
+        <mj-text font-family="Poppins, Arial, sans-serif" font-size="12px" color="#ffffff" align="center" padding="0 15px">
+          © {{current_year}} {{company}}. All rights reserved.
+        </mj-text>
+        <mj-text font-family="Poppins, Arial, sans-serif" font-size="12px" color="#aaaaaa" align="center" padding="5px 15px 0 15px">
+          You received this email because you filled to our form. If you wish to try another email, click <a href="{{link}}" style="color: #ffffff; text-decoration: underline;">here</a>.
         </mj-text>
       </mj-column>
     </mj-section>
