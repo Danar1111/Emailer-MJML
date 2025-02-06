@@ -23,5 +23,5 @@ app.listen(PORT, () => {
     }).catch((err) => {
         console.error('Database connection failed:', err);
     });
-    // emailer();
+    emailer();
 });

@@ -33,7 +33,6 @@ export const upload = async(req, res) => {
 
     const { username, email, message, schedule } = req.body;
 
-    
     try {
         if(req.file) {
             const fileUrl = `${req.protocol}://${req.headers.host}/uploads/${req.file.filename}`;
