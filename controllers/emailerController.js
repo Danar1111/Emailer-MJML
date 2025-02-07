@@ -33,13 +33,17 @@ function fillTemplate(template, data) {
         .replace(/{{link}}/g, data.link);
 }
 
-async function sendEmail(toEmail) {
-    const templatePath = path.join(__dirname, '../emailBody/email.mjml');
-    const htmlContent = fs.readFileSync(templatePath, 'utf8');
+const templatePath = path.join(__dirname, '../emailBody/email.mjml');
+const htmlContent = fs.readFileSync(templatePath, 'utf8');
+
+async function sendEmail(username, email, file) {
+    if (!file){
+        file = 'https://picsum.photos/400';
+    }
 
     const emailData = {
-        user_name: 'User Name',
-        image: 'https://picsum.photos/400',
+        user_name: username,
+        image: file,
         generated: 'The future belongs to those who believe in the beauty of their dreams.',
         generated_by: 'Eleanor Roosevelt',
         regards: 'Owner Name',
@@ -55,8 +59,8 @@ async function sendEmail(toEmail) {
     try {
         const info = await transporter.sendMail({
             from: process.env.EMAIL_FROM,
-            to: toEmail,
-            subject: 'Hi There!',
+            to: email,
+            subject: `Hi ${username}`,
             html: html,
         });
 
@@ -66,9 +70,55 @@ async function sendEmail(toEmail) {
     }
 }
 
+function convertDateTimeToCron(dateTime) {
+    const date = new Date(dateTime + 'Z');
+    const minute = date.getUTCMinutes();
+    const hour = date.getUTCHours();
+    const dayOfMonth = date.getUTCDate();
+    const month = date.getUTCMonth() + 1;
+
+    return `${minute} ${hour} ${dayOfMonth} ${month} *`;
+}
+
 export const emailer = () => {
-    sendEmail(process.env.TEST_EMAIL);
-    cron.schedule('* * * * *', () => {
-        console.log('work')
-    })
+    try {
+        // per minute job for test purpose -> next will be change to daily
+        cron.schedule('* * * * *', async() => {
+            const scheduled_data = await db.execute("SELECT * FROM scheduled_messages WHERE DATE(schedule) = CURDATE() AND status = 'pending'");
+            let count = 0;
+            const today = new Date();
+
+            scheduled_data[0].forEach(row => {
+                const id = row["id"];
+                const username = row["username"];
+                const email = row["email"];
+                const schedule = row["schedule"];
+                const file = row["file"];
+                console.log(`Schedule from DB: ${schedule}`);
+                
+                const cronTime = convertDateTimeToCron(schedule);
+                console.log(`Generated Cron Time: ${cronTime}`);
+                
+                const job = cron.schedule(cronTime, async () => {
+                    try {
+                        console.log(`Executing task for schedule: ${schedule}`);
+                        
+                        // await sendEmail(process.env.TEST_EMAIL);
+                        await sendEmail(username, email, file);
+                        await db.execute('UPDATE scheduled_messages SET status = "sent" WHERE id = ?', [id]);
+                        
+                        job.stop();
+                        console.log(`Cron job for schedule ${schedule} has been stopped.`);
+                    } catch (error) {
+                        console.error(`Failed to send email for schedule ${schedule}:`, error);
+                        await db.execute('UPDATE scheduled_messages SET status = "failed" WHERE id = ?', [id]);
+                    }
+                });
+                count++;
+            });
+            console.log(`Running daily schedule check, ${count} jobs in queue today, ${today}`);
+        });
+    } catch (err) {
+        console.error('Error scheduling cron jobs:', err);
+    }
 };
