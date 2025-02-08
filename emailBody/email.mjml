@@ -37,10 +37,10 @@
     <mj-section padding="20px 20px" background-color="#ffffff" border-radius="12px">
       <mj-column>
         <mj-text font-family="Poppins, Arial, sans-serif" color="#333333" font-size="18px" font-style="italic" line-height="1.6" align="center" padding-bottom="10px">
-          "{{generated}}"
+          {{generated}}
         </mj-text>
         <mj-text font-family="Poppins, Arial, sans-serif" font-size="16px" color="#555555" align="center">
-          {{generated_by}}
+          - {{generated_by}}
         </mj-text>
       </mj-column>
     </mj-section>
