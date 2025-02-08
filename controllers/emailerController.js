@@ -36,7 +36,7 @@ function fillTemplate(template, data) {
 const templatePath = path.join(__dirname, '../emailBody/email.mjml');
 const htmlContent = fs.readFileSync(templatePath, 'utf8');
 
-async function sendEmail(username, email, file) {
+async function sendEmail(username, email, file, generated_text, generated_by) {
     if (!file){
         file = 'https://picsum.photos/400';
     }
@@ -44,8 +44,8 @@ async function sendEmail(username, email, file) {
     const emailData = {
         user_name: username,
         image: file,
-        generated: 'The future belongs to those who believe in the beauty of their dreams.',
-        generated_by: 'Eleanor Roosevelt',
+        generated: generated_text,
+        generated_by: generated_by,
         regards: 'Owner Name',
         company: 'Company Name',
         current_year: new Date().getFullYear(),
@@ -94,6 +94,8 @@ export const emailer = () => {
                 const email = row["email"];
                 const schedule = row["schedule"];
                 const file = row["file"];
+                const generated_text = row["generated_text"];
+                const generated_by = row["generated_by"];
                 console.log(`Schedule from DB: ${schedule}`);
                 
                 const cronTime = convertDateTimeToCron(schedule);
@@ -104,7 +106,7 @@ export const emailer = () => {
                         console.log(`Executing task for schedule: ${schedule}`);
                         
                         // await sendEmail(process.env.TEST_EMAIL);
-                        await sendEmail(username, email, file);
+                        await sendEmail(username, email, file, generated_text, generated_by);
                         await db.execute('UPDATE scheduled_messages SET status = "sent" WHERE id = ?', [id]);
                         
                         job.stop();
