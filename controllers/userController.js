@@ -6,6 +6,7 @@ import fs from  "fs";
 import { fileURLToPath } from "url";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
+import { cronjob } from './emailerController.js';
 dotenv.config();
 
 const keys = process.env.API_KEYS;
@@ -66,21 +67,55 @@ export const upload = async(req, res) => {
     }
 
     try {
-        if(req.file) {
-            const fileUrl = `${req.protocol}://${req.headers.host}/uploads/${req.file.filename}`;
-            await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, file, generated_text, generated_by) VALUES (?,?,?,?,?,?,?)', [username, email, message, schedule, fileUrl, generated_text, generated_by]);
-        } else {
-            await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, generated_text, generated_by) VALUES (?,?,?,?,?,?)', [username, email, message, schedule, generated_text, generated_by]);
+        let insertResult;
+        let return_message;
+        let insertedId;
+        const now = new Date();
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+        const scheduleTime = new Date(schedule.replace(' ', 'T'));
+        let fileUrl;
+
+        if (scheduleTime <= todayEnd && scheduleTime >= now)
+        {
+            if(req.file) {
+                fileUrl = `${req.protocol}://${req.headers.host}/uploads/${req.file.filename}`;
+                insertResult = await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, file, generated_text, generated_by) VALUES (?,?,?,?,?,?,?)', [username, email, message, schedule, fileUrl, generated_text, generated_by]);
+            } else {
+                insertResult = await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, generated_text, generated_by) VALUES (?,?,?,?,?,?)', [username, email, message, schedule, generated_text, generated_by]);
+            }
+            insertedId = insertResult[0].insertId;
+            return_message = "Valid";
+            cronjob(username, email, fileUrl, generated_text, generated_by, insertedId, scheduleTime);
         }
+        else if (scheduleTime < now)
+        {
+            throw 'Date Time Not Valid';
+        }
+        else
+        {
+            if(req.file) {
+                fileUrl = `${req.protocol}://${req.headers.host}/uploads/${req.file.filename}`;
+                await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, file, generated_text, generated_by) VALUES (?,?,?,?,?,?,?)', [username, email, message, schedule, fileUrl, generated_text, generated_by]);
+            } else {
+                await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, generated_text, generated_by) VALUES (?,?,?,?,?,?)', [username, email, message, schedule, generated_text, generated_by]);
+            }
+            return_message = "Valid, Task will be execute with cronjob on that schedule";
+        };
 
         res.status(200).send({
             error: false,
-            message: 'Successfully added message'
+            message: return_message
         })
 
     } catch (err) {
         console.error('Error during add schedule:', err);
-        res.status(500).send({ error: true, message: 'server error'});
+
+        if (err === 'Date Time Not Valid') {
+            return res.status(400).send({ error: true, message: err });
+        }
+
+        res.status(500).send({ error: true, message: err});
     };
 };
 
