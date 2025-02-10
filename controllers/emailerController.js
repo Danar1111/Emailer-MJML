@@ -109,7 +109,7 @@ export const emailer = () => {
     }
 };
 
-function cronjob(username, email, file, generated_text, generated_by, id, schedule) {
+export function cronjob(username, email, file, generated_text, generated_by, id, schedule) {
     const cronTime = convertDateTimeToCron(schedule);
     console.log(`Generated Cron Time: ${cronTime}`);
 
