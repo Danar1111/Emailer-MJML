@@ -36,7 +36,7 @@ function fillTemplate(template, data) {
 const templatePath = path.join(__dirname, '../emailBody/email.mjml');
 const htmlContent = fs.readFileSync(templatePath, 'utf8');
 
-async function sendEmail(username, email, file, generated_text, generated_by) {
+async function sendEmail(username, email, file, generated_text, generated_by, id) {
     if (!file){
         file = 'https://picsum.photos/400';
     }
@@ -67,6 +67,7 @@ async function sendEmail(username, email, file, generated_text, generated_by) {
         console.log('Email berhasil dikirim:', info.messageId);
     } catch (error) {
         console.error('Error saat mengirim email:', error);
+        await db.execute('UPDATE scheduled_messages SET status = "failed" WHERE id = ?', [id]);
     }
 }
 
@@ -97,25 +98,8 @@ export const emailer = () => {
                 const generated_text = row["generated_text"];
                 const generated_by = row["generated_by"];
                 console.log(`Schedule from DB: ${schedule}`);
-                
-                const cronTime = convertDateTimeToCron(schedule);
-                console.log(`Generated Cron Time: ${cronTime}`);
-                
-                const job = cron.schedule(cronTime, async () => {
-                    try {
-                        console.log(`Executing task for schedule: ${schedule}`);
-                        
-                        // await sendEmail(process.env.TEST_EMAIL);
-                        await sendEmail(username, email, file, generated_text, generated_by);
-                        await db.execute('UPDATE scheduled_messages SET status = "sent" WHERE id = ?', [id]);
-                        
-                        job.stop();
-                        console.log(`Cron job for schedule ${schedule} has been stopped.`);
-                    } catch (error) {
-                        console.error(`Failed to send email for schedule ${schedule}:`, error);
-                        await db.execute('UPDATE scheduled_messages SET status = "failed" WHERE id = ?', [id]);
-                    }
-                });
+
+                cronjob(username, email, file, generated_text, generated_by, id, schedule);
                 count++;
             });
             console.log(`Running daily schedule check, ${count} jobs in queue today, ${today}`);
@@ -123,4 +107,25 @@ export const emailer = () => {
     } catch (err) {
         console.error('Error scheduling cron jobs:', err);
     }
+};
+
+function cronjob(username, email, file, generated_text, generated_by, id, schedule) {
+    const cronTime = convertDateTimeToCron(schedule);
+    console.log(`Generated Cron Time: ${cronTime}`);
+
+    const job = cron.schedule(cronTime, async () => {
+        try {
+            console.log(`Executing task for schedule: ${schedule}`);
+            
+            // await sendEmail(process.env.TEST_EMAIL);
+            await sendEmail(username, email, file, generated_text, generated_by, id);
+            await db.execute('UPDATE scheduled_messages SET status = "sent" WHERE id = ?', [id]);
+            
+            job.stop();
+            console.log(`Cron job for schedule ${schedule} has been stopped.`);
+        } catch (error) {
+            console.error(`Failed to send email for schedule ${schedule}:`, error);
+            await db.execute('UPDATE scheduled_messages SET status = "failed" WHERE id = ?', [id]);
+        }
+    });
 };
