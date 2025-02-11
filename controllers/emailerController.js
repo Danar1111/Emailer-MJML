@@ -46,8 +46,8 @@ async function sendEmail(username, email, file, generated_text, generated_by, id
         image: file,
         generated: generated_text,
         generated_by: generated_by,
-        regards: 'Owner Name',
-        company: 'Company Name',
+        regards: process.env.OWNER_NAME,
+        company: process.env.COMPANY_NAME,
         current_year: new Date().getFullYear(),
         link: "link_example"
     };
