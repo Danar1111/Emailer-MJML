@@ -103,6 +103,9 @@ export const emailer = () => {
                 count++;
             });
             console.log(`Running daily schedule check, ${count} jobs in queue today, ${today}`);
+
+            await db.execute("INSERT INTO history_messages (id, username, email, message, schedule, file, generated_text, generated_by, status, created_at) SELECT id, username, email, message, schedule, file, generated_text, generated_by, status, created_at FROM scheduled_messages WHERE status = 'sent'");
+            await db.execute("DELETE FROM scheduled_messages WHERE status = 'sent'");
         });
     } catch (err) {
         console.error('Error scheduling cron jobs:', err);
