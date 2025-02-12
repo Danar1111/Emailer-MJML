@@ -59,7 +59,7 @@
         </div>
     </div>
     <div id="popup_failed" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg p-6 text-center max-w-sm">
+        <div class="bg-white border-2 border-red-500 rounded-lg shadow-lg p-6 text-center max-w-sm">
             <p id="popup-message-failed" class="text-gray-700 text-lg font-semibold"></p>
             <button onclick="closePopupFailed()" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-700 transition">Try Again</button>
         </div>
@@ -83,13 +83,13 @@
                         document.getElementById("image-preview").classList.add("hidden");
                         document.getElementById("upload-placeholder").classList.remove("hidden");
                     } else if (result.message === "Valid, Task will be execute with cronjob on that schedule") {
-                        showPopupSuccess("Request sent successfully!, Please wait until the day");
+                        showPopupSuccess("Request sent successfully! Please wait until the day");
                         event.target.reset();
                         document.getElementById("image-preview").classList.add("hidden");
                         document.getElementById("upload-placeholder").classList.remove("hidden");
                     }
                 } else if (result.message === "Date Time Not Valid") {
-                    showPopupFailed("Schedule Time Not Valid, Please use at least 1 minute after now");
+                    showPopupFailed("Schedule Time Not Valid! Please use at least 1 minute after now");
                 }
             } catch (error) {
                 showPopup("Failed to send message. Please try again.");
