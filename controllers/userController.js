@@ -90,6 +90,7 @@ export const upload = async(req, res) => {
         }
         else if (scheduleTime < now)
         {
+            if (req.file) fs.unlinkSync(req.file.path);
             throw 'Date Time Not Valid';
         }
         else
@@ -114,6 +115,8 @@ export const upload = async(req, res) => {
         if (err === 'Date Time Not Valid') {
             return res.status(400).send({ error: true, message: err });
         }
+
+        if (req.file) fs.unlinkSync(req.file.path);
 
         res.status(500).send({ error: true, message: err});
     };
