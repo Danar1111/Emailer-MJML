@@ -44,13 +44,7 @@ const storage = multer.diskStorage({
 
 const uploadFile = multer({ storage }).single('file');
 
-export const upload = async(req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ error: errors.array() });
-    }
-
-    const { username, email, message, schedule } = req.body;
+async function generated_quote(username, message) {
     const generated_message = await generated(message, username);
 
     const regex = /^(.*?)\s*;;\s*(.+)$/s;
@@ -62,9 +56,20 @@ export const upload = async(req, res) => {
     if (match) {
         generated_text = match[1].trim();
         generated_by = match[2].trim();
+
+        return { generated_text, generated_by };
     } else {
         console.warn('Regex did not match. Message format may be incorrect.');
     }
+}
+
+export const upload = async(req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array() });
+    }
+
+    const { username, email, message, schedule } = req.body;
 
     try {
         let insertResult;
@@ -78,6 +83,7 @@ export const upload = async(req, res) => {
 
         if (scheduleTime <= todayEnd && scheduleTime >= now)
         {
+            let { generated_text, generated_by } = await generated_quote(username, message);
             if(req.file) {
                 fileUrl = `${req.protocol}://${req.headers.host}/uploads/${req.file.filename}`;
                 insertResult = await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, file, generated_text, generated_by) VALUES (?,?,?,?,?,?,?)', [username, email, message, schedule, fileUrl, generated_text, generated_by]);
@@ -95,6 +101,7 @@ export const upload = async(req, res) => {
         }
         else
         {
+            let { generated_text, generated_by } = await generated_quote(username, message);
             if(req.file) {
                 fileUrl = `${req.protocol}://${req.headers.host}/uploads/${req.file.filename}`;
                 await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, file, generated_text, generated_by) VALUES (?,?,?,?,?,?,?)', [username, email, message, schedule, fileUrl, generated_text, generated_by]);
