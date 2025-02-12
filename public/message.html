@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="max-w-lg bg-white rounded-xl shadow-lg p-6 text-center">
+        <h1 class="text-3xl font-bold text-gray-800">Send a Special Message</h1>
+        <p class="text-gray-600 mt-2">Fill out this form to receive a special email on your special day, containing meaningful words just for you.</p>
+        
+        <form id="message-form" class="mt-4" enctype="multipart/form-data">
+            <div class="mb-4">
+                <input type="text" name="username" placeholder="Your Name" required 
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-4">
+                <input type="email" name="email" placeholder="Your Email" required 
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-4">
+                <textarea name="message" placeholder="Your Message" required 
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div class="mb-4 text-left">
+                <label class="block text-gray-700 font-medium mb-2">Schedule Time:</label>
+                <input type="datetime-local" name="schedule" required 
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <p class="text-sm text-gray-500">Choose the date and time when you want to receive your special email.</p>
+            </div>
+            <div class="mb-4 text-left">
+                <label class="block text-gray-700 font-medium mb-2">Upload Image (Optional):</label>
+                <div class="flex items-center justify-center w-full relative">
+                    <label id="drop-zone" class="flex flex-col w-full h-32 border-2 border-dashed border-gray-400 rounded-lg cursor-pointer hover:border-blue-500 relative overflow-hidden">
+                        <div class="flex flex-col items-center justify-center pt-7" id="upload-placeholder">
+                            <svg class="w-8 h-8 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V12M17 16V12M12 8v8M12 4l-8 8m16 0L12 4"></path>
+                            </svg>
+                            <p class="text-sm text-gray-500 mt-1">Click to upload an image or drag it here</p>
+                        </div>
+                        <input type="file" name="file" accept="image/*" class="hidden" id="file-input">
+                        <img id="image-preview" class="absolute inset-0 w-24 h-24 mx-auto my-auto object-cover rounded-lg hidden" />
+                    </label>
+                </div>
+                <p class="text-sm text-gray-500 mt-2 text-center italic">The uploaded image will appear in the email. If no image is provided, a random image will be included instead.</p>
+            </div>
+            <button type="submit" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition">
+                Send Request
+            </button>
+        </form>
+    </div>
+
+    <div id="popup_success" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 text-center max-w-sm">
+            <p id="popup-message-success" class="text-gray-700 text-lg font-semibold"></p>
+            <button onclick="closePopupSuccess()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition">OK</button>
+        </div>
+    </div>
+    <div id="popup_failed" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 text-center max-w-sm">
+            <p id="popup-message-failed" class="text-gray-700 text-lg font-semibold"></p>
+            <button onclick="closePopupFailed()" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-700 transition">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("message-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+
+            try {
+                let response = await fetch("/upload", {
+                    method: "POST",
+                    body: formData
+                });
+                let result = await response.json();
+                if (response.ok) {
+                    if (result.message === "Valid") {
+                        showPopupSuccess("Request sent successfully!, Please wait until the time");
+                        event.target.reset();
+                        document.getElementById("image-preview").classList.add("hidden");
+                        document.getElementById("upload-placeholder").classList.remove("hidden");
+                    } else if (result.message === "Valid, Task will be execute with cronjob on that schedule") {
+                        showPopupSuccess("Request sent successfully!, Please wait until the day");
+                        event.target.reset();
+                        document.getElementById("image-preview").classList.add("hidden");
+                        document.getElementById("upload-placeholder").classList.remove("hidden");
+                    }
+                } else if (result.message === "Date Time Not Valid") {
+                    showPopupFailed("Schedule Time Not Valid, Please use at least 1 minute after now");
+                }
+            } catch (error) {
+                showPopup("Failed to send message. Please try again.");
+                console.error("Failed to send message:", error);
+            }
+        });
+
+        function showPopupSuccess(message) {
+            document.getElementById("popup-message-success").innerText = message;
+            document.getElementById("popup_success").classList.remove("hidden");
+        }
+        function showPopupFailed(message) {
+            document.getElementById("popup-message-failed").innerText = message;
+            document.getElementById("popup_failed").classList.remove("hidden");
+        }
+
+        function closePopupSuccess() {
+            document.getElementById("popup_success").classList.add("hidden");
+            window.location.href = "success";
+        }
+        function closePopupFailed() {
+            document.getElementById("popup_failed").classList.add("hidden");
+        }
+
+        const dropZone = document.getElementById("drop-zone");
+        const fileInput = document.getElementById("file-input");
+        const imagePreview = document.getElementById("image-preview");
+        const uploadPlaceholder = document.getElementById("upload-placeholder");
+
+        dropZone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            dropZone.classList.add("border-blue-500");
+        });
+
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.classList.remove("border-blue-500");
+        });
+
+        dropZone.addEventListener("drop", (event) => {
+            event.preventDefault();
+            dropZone.classList.remove("border-blue-500");
+            
+            if (event.dataTransfer.files.length > 0) {
+                fileInput.files = event.dataTransfer.files;
+                previewImage(fileInput.files[0]);
+            }
+        });
+
+        fileInput.addEventListener("change", (event) => {
+            if (event.target.files.length > 0) {
+                previewImage(event.target.files[0]);
+            }
+        });
+
+        function previewImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.classList.remove("hidden");
+                uploadPlaceholder.classList.add("hidden");
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
