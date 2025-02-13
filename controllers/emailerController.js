@@ -64,9 +64,9 @@ async function sendEmail(username, email, file, generated_text, generated_by, id
             html: html,
         });
 
-        console.log('Email berhasil dikirim:', info.messageId);
+        console.log('Email successfully sent:', info.messageId);
     } catch (error) {
-        console.error('Error saat mengirim email:', error);
+        console.error('Error while sending email:', error);
         await db.execute('UPDATE scheduled_messages SET status = "failed" WHERE id = ?', [id]);
     }
 }
