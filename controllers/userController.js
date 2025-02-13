@@ -1,5 +1,5 @@
 import { db } from '../config/db.js';
-import { ExpressValidator, validationResult } from 'express-validator';
+import { validationResult } from 'express-validator';
 import multer from 'multer';
 import path from "path";
 import fs from  "fs";
