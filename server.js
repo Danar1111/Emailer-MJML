@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 const PORT = 3333;
+app.enable('trust proxy');
 
 app.use(router);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
