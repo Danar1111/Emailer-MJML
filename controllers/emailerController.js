@@ -83,8 +83,7 @@ function convertDateTimeToCron(dateTime) {
 
 export const emailer = () => {
     try {
-        // per minute job for test purpose -> next will be change to daily
-        cron.schedule('* * * * *', async() => {
+        cron.schedule('0 0 * * *', async() => {
             const scheduled_data = await db.execute("SELECT * FROM scheduled_messages WHERE DATE(schedule) = CURDATE() AND status = 'pending'");
             let count = 0;
             const today = new Date();
