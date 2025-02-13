@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function generated(message, username) {
-    let input = `give a quote for ${username} that ${message} or from famous people, Please provide a response in this format:generated_text ;; source famous person (modified for ${username}) or type "system" if original generated`
+    let input = `Give a meaningful quote for ${username} that ${message}. The quote can be original or from a famous person. Please provide a response in this format: generated_text ;; source famous person (modified for ${username}) or type "system" if original generated. Ensure the quote is inspiring, relevant, and well-structured.`;
     try {
         const prompt = input;
         const result = await model.generateContent(prompt);
