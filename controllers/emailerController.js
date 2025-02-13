@@ -49,7 +49,7 @@ async function sendEmail(username, email, file, generated_text, generated_by, id
         regards: process.env.OWNER_NAME,
         company: process.env.COMPANY_NAME,
         current_year: new Date().getFullYear(),
-        link: "link_example"
+        link: process.env.LINK_WEBSITE
     };
 
     const renderedTemplate = fillTemplate(htmlContent, emailData);
