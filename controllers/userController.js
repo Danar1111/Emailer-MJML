@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import { cronjob } from './emailerController.js';
+import sharp from 'sharp';
 dotenv.config();
 
 const keys = process.env.API_KEYS;
@@ -43,6 +44,23 @@ const storage = multer.diskStorage({
 });
 
 const uploadFile = multer({ storage }).single('file');
+
+async function compressImage(filePath) {
+    try {
+        const outputFilePath = filePath.replace(path.extname(filePath), ".webp");
+
+        await sharp(filePath)
+            .resize({ width: 1024 })
+            .toFormat('webp', { quality: 80 })
+            .toFile(outputFilePath);
+
+        fs.unlinkSync(filePath);
+        return outputFilePath;
+    } catch (error) {
+        console.error("Error compressing image:", error);
+        return filePath;
+    }
+}
 
 async function generated_quote(username, message) {
     const generated_message = await generated(message, username);
@@ -85,7 +103,8 @@ export const upload = async(req, res) => {
         {
             let { generated_text, generated_by } = await generated_quote(username, message);
             if(req.file) {
-                fileUrl = `${req.protocol}://${req.headers.host}/uploads/${req.file.filename}`;
+                const compressFilePath = await compressImage(req.file.path);
+                fileUrl = `${req.protocol}://${req.headers.host}/uploads/${path.basename(compressFilePath)}`;
                 insertResult = await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, file, generated_text, generated_by) VALUES (?,?,?,?,?,?,?)', [username, email, message, schedule, fileUrl, generated_text, generated_by]);
             } else {
                 insertResult = await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, generated_text, generated_by) VALUES (?,?,?,?,?,?)', [username, email, message, schedule, generated_text, generated_by]);
@@ -103,7 +122,8 @@ export const upload = async(req, res) => {
         {
             let { generated_text, generated_by } = await generated_quote(username, message);
             if(req.file) {
-                fileUrl = `${req.protocol}://${req.headers.host}/uploads/${req.file.filename}`;
+                const compressFilePath = await compressImage(req.file.path);
+                fileUrl = `${req.protocol}://${req.headers.host}/uploads/${path.basename(compressFilePath)}`;
                 await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, file, generated_text, generated_by) VALUES (?,?,?,?,?,?,?)', [username, email, message, schedule, fileUrl, generated_text, generated_by]);
             } else {
                 await db.execute('INSERT INTO scheduled_messages (username, email, message, schedule, generated_text, generated_by) VALUES (?,?,?,?,?,?)', [username, email, message, schedule, generated_text, generated_by]);
