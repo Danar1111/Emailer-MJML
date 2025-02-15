@@ -54,7 +54,9 @@ async function compressImage(filePath) {
             .toFormat('webp', { quality: 80 })
             .toFile(outputFilePath);
 
+        // still error delete original file
         fs.unlinkSync(filePath);
+
         return outputFilePath;
     } catch (error) {
         console.error("Error compressing image:", error);
