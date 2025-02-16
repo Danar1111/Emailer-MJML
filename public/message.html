@@ -106,7 +106,7 @@
                 }
             } catch (error) {
                 closeLoading();
-                showPopup("Failed to send message. Please try again.");
+                showPopupFailed("Failed to send message. Please try again.");
                 console.error("Failed to send message:", error);
             }
         });
