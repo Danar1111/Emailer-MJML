@@ -2,12 +2,13 @@ import { db } from '../config/db.js';
 import { validationResult } from 'express-validator';
 import multer from 'multer';
 import path from "path";
-import fs from  "fs";
+import fsSync from  "fs";
 import { fileURLToPath } from "url";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import { cronjob } from './emailerController.js';
 import sharp from 'sharp';
+import fs from 'fs/promises';
 dotenv.config();
 
 const keys = process.env.API_KEYS;
@@ -29,7 +30,7 @@ async function generated(message, username) {
 }
 
 const uploadPath = path.join(__dirname, "../uploads");
-if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
+if (!fsSync.existsSync(uploadPath)) fsSync.mkdirSync(uploadPath);
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -49,13 +50,16 @@ async function compressImage(filePath) {
     try {
         const outputFilePath = filePath.replace(path.extname(filePath), ".webp");
 
-        await sharp(filePath)
+        const fileBuffer = await fs.readFile(filePath);
+
+        const compressedBuffer = await sharp(fileBuffer)
             .resize({ width: 1024 })
             .toFormat('webp', { quality: 80 })
-            .toFile(outputFilePath);
+            .toBuffer();
 
-        // still error delete original file
-        fs.unlinkSync(filePath);
+        await fs.writeFile(outputFilePath, compressedBuffer);
+
+        await fs.unlink(filePath);
 
         return outputFilePath;
     } catch (error) {
@@ -117,7 +121,7 @@ export const upload = async(req, res) => {
         }
         else if (scheduleTime < now)
         {
-            if (req.file) fs.unlinkSync(req.file.path);
+            if (req.file) fsSync.unlinkSync(req.file.path);
             throw 'Date Time Not Valid';
         }
         else
@@ -145,7 +149,7 @@ export const upload = async(req, res) => {
             return res.status(400).send({ error: true, message: err });
         }
 
-        if (req.file) fs.unlinkSync(req.file.path);
+        if (req.file) fsSync.unlinkSync(req.file.path);
 
         res.status(500).send({ error: true, message: err});
     };
