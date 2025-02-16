@@ -53,6 +53,7 @@ async function compressImage(filePath) {
         const fileBuffer = await fs.readFile(filePath);
 
         const compressedBuffer = await sharp(fileBuffer)
+            .rotate()
             .resize({ width: 1024 })
             .toFormat('webp', { quality: 80 })
             .toBuffer();
