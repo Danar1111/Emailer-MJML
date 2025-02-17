@@ -119,7 +119,6 @@ export function cronjob(username, email, file, generated_text, generated_by, id,
         try {
             console.log(`Executing task for schedule: ${schedule}`);
             
-            // await sendEmail(process.env.TEST_EMAIL);
             await sendEmail(username, email, file, generated_text, generated_by, id);
             await db.execute('UPDATE scheduled_messages SET status = "sent" WHERE id = ?', [id]);
             
