@@ -1,8 +1,7 @@
 import express from 'express';
 import { upload, uploadFile } from '../controllers/userController.js';
-import path, { join } from 'path';
+import path from 'path';
 import { fileURLToPath } from 'url';
-import { send } from 'process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
